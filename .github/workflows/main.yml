@@ -1,0 +1,27 @@
+name: Pelican Docker CI
+
+# Triggers the workflow on manually or
+# push events but only for the master branch
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Push to docker hub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          IMAGE_NAME: pelican-docker
+          VERSION: latest
+        run: |
+          docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} docker.io
+          docker build -t ${IMAGE_NAME}:${VERSION} .
+          docker tag ${IMAGE_NAME}:${VERSION} docker.io/${DOCKER_USERNAME}/${IMAGE_NAME}:${VERSION}
+          docker push ${DOCKER_USERNAME}/${IMAGE_NAME}:${VERSION}
